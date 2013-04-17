@@ -35,6 +35,7 @@ namespace Humanizer
         static readonly Func<string, string> FromUnderscoreSeparatedWords = methodName => string.Join(" ", methodName.Split(new[] { '_' }));
         static string FromPascalCase(string name)
         {
+	        var originalChars = new List<char>();
             var chars = name.Aggregate(
                 new List<char>(),
                 (list, currentChar) =>
@@ -42,16 +43,19 @@ namespace Humanizer
                     if (currentChar == ' ')
                     {
                         list.Add(currentChar);
+	                    originalChars.Add(currentChar);
                         return list;
                     }
 
                     if (list.Count == 0)
                     {
                         list.Add(currentChar);
+	                    originalChars.Add(currentChar);
                         return list;
                     }
 
                     var lastCharacterInTheList = list[list.Count - 1];
+	                var lastOriginalCharacterInTheList = originalChars[originalChars.Count - 1];
                     if (lastCharacterInTheList != ' ')
                     {
                         if (char.IsDigit(lastCharacterInTheList))
@@ -59,11 +63,37 @@ namespace Humanizer
                             if (char.IsLetter(currentChar))
                                 list.Add(' ');
                         }
-                        else if (!char.IsLower(currentChar))
-                            list.Add(' ');
+						else if (!char.IsLower(lastCharacterInTheList) && !char.IsLower(currentChar) && !char.IsDigit(currentChar))
+						{
+							list.Add(currentChar);
+							originalChars.Add(currentChar);
+							return list;
+						}
+						else if (!char.IsLower(currentChar))
+						{
+							if (!char.IsLower(lastOriginalCharacterInTheList))
+							{
+								list.RemoveAt(list.Count - 1);
+								list.Add(lastOriginalCharacterInTheList);
+								list.Add(currentChar);
+								originalChars.Add(currentChar);
+								return list;
+							}
+							list.Add(' ');
+						}
+						else
+						{
+							if (!char.IsLower(lastCharacterInTheList) && list.Count > 1)
+							{
+								list.RemoveAt(list.Count - 1);
+								list.Add(' ');
+								list.Add(char.ToLower(lastCharacterInTheList));
+							}
+						}
                     }
 
                     list.Add(char.ToLower(currentChar));
+	                originalChars.Add(currentChar);
 
                     return list;
                 });
@@ -75,7 +105,7 @@ namespace Humanizer
         public static string Humanize(this string input) 
         {
             // if input is all capitals (e.g. an acronym) then return it without change
-            if (!input.Any(Char.IsLower))
+            if (!input.Any(Char.IsLower) && !input.Any(Char.IsDigit))
                 return input;
 
             if (input.Contains("_"))

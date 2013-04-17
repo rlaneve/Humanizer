@@ -37,7 +37,7 @@ namespace Humanizer.Tests.Extensions
                 "PascalCaseInputStringIsTurnedIntoSentence".Humanize());
         }
 
-        [Fact]
+        //[Fact]
         public void WhenInputStringContainsConsequtiveCaptialLetters_ThenTheyAreTurnedIntoOneLetterWords()
         {
             Assert.Equal(
@@ -88,6 +88,30 @@ namespace Humanizer.Tests.Extensions
                 "HTML",
                 "HTML".Humanize());
         }
+
+		[Fact]
+		public void AcronymsAtTheBeginningOfAStringAreLeftIntact()
+		{
+			Assert.Equal(
+				"HTML is cool",
+				"HTMLIsCool".Humanize());
+		}
+
+		[Fact]
+		public void AcronymsAtThenEndOfAStringAreLeftIntact()
+		{
+			Assert.Equal(
+				"How cool is HTML",
+				"HowCoolIsHTML".Humanize());
+		}
+
+		[Fact]
+		public void AcronymsWithinAStringAreLeftIntact()
+		{
+			Assert.Equal(
+				"I think HTML is cool",
+				"IThinkHTMLIsCool".Humanize());
+		}
 
         [Fact]
         public void CanHumanizeIntoTitleCaseWithoutUsingUnderscores()
